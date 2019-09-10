@@ -13,6 +13,26 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+Route::prefix('v1')->name('api.v1.')->namespace('Api\V1')->group(function () {
+    Route::name('status')->get('/status', function () {
+        return response()->json(['status' => 'OK']);
+    });
+
+
+    Route::apiResource('posts', 'PostController');
+    Route::apiResource('posts.comments', 'PostCommentController')->only('store', 'index');
+    
+    Route::namespace('Auth')->group(function () {
+        Route::post('register', 'RegisterController@register')->name('register');
+        Route::post('login', 'LoginController@login')->name('login');
+        Route::post('logout', 'LogoutController@logout')->middleware('auth:api')->name('logout');
+    });
+
+    Route::fallback(function () {
+        return response()->json([
+            'message' => 'Not found'
+        ], 404);
+    })->name('fallback');
+    
 });
+
